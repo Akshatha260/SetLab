@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib_venn import venn3
 
 
+
+
+
 # =========================================================
 # PAGE SETTINGS
 # =========================================================
@@ -582,8 +585,9 @@ elif page == "⭕ Venn Visualizer":
     st.header("Interactive Venn Diagram")
 
     st.write(
-        "Choose an operation and the corresponding "
-        "regions will be highlighted."
+        "Choose an operation to highlight the matching regions. "
+        "Each region displays its actual elements, and the rectangle "
+        "represents the Universal Set."
     )
 
     if "U" not in st.session_state:
@@ -600,6 +604,16 @@ elif page == "⭕ Venn Visualizer":
         B = st.session_state["B"]
         C = st.session_state["C"]
 
+        # Keep the diagram mathematically consistent with the universe.
+        outside_universe = (A | B | C) - U
+        if outside_universe:
+            st.warning(
+                "Some elements in A, B or C are not in U: "
+                + format_set(outside_universe)
+                + ". For a valid set diagram, each of A, B and C "
+                "should be a subset of U."
+            )
+
         operation = st.selectbox(
             "Choose an operation:",
             [
@@ -607,421 +621,232 @@ elif page == "⭕ Venn Visualizer":
                 "Union (A ∪ C)",
                 "Union (B ∪ C)",
                 "Union (A ∪ B ∪ C)",
-
                 "Intersection (A ∩ B)",
                 "Intersection (A ∩ C)",
                 "Intersection (B ∩ C)",
                 "Intersection (A ∩ B ∩ C)",
-
                 "Difference (A − B)",
                 "Difference (A − C)",
                 "Difference (B − A)",
                 "Difference (B − C)",
                 "Difference (C − A)",
                 "Difference (C − B)",
-
                 "Complement (A')",
                 "Complement (B')",
                 "Complement (C')"
             ]
         )
 
-        # =================================================
-        # CALCULATE RESULT AND EXPLANATION
-        # =================================================
-
+        # Calculate the operation result and explanation.
         if operation == "Union (A ∪ B)":
-
             result = A | B
-
-            explanation = (
-                "The union contains all elements that belong "
-                "to A, B, or both."
-            )
+            explanation = "All elements that belong to A, B, or both."
+            selected_regions = ["100", "010", "110", "101", "011", "111"]
 
         elif operation == "Union (A ∪ C)":
-
             result = A | C
-
-            explanation = (
-                "The union contains all elements that belong "
-                "to A, C, or both."
-            )
+            explanation = "All elements that belong to A, C, or both."
+            selected_regions = ["100", "001", "110", "101", "011", "111"]
 
         elif operation == "Union (B ∪ C)":
-
             result = B | C
-
-            explanation = (
-                "The union contains all elements that belong "
-                "to B, C, or both."
-            )
+            explanation = "All elements that belong to B, C, or both."
+            selected_regions = ["010", "001", "110", "101", "011", "111"]
 
         elif operation == "Union (A ∪ B ∪ C)":
-
             result = A | B | C
-
-            explanation = (
-                "The union contains all elements that belong "
-                "to at least one of the three sets."
-            )
+            explanation = "All elements that belong to at least one of the three sets."
+            selected_regions = ["100", "010", "001", "110", "101", "011", "111"]
 
         elif operation == "Intersection (A ∩ B)":
-
             result = A & B
-
-            explanation = (
-                "The intersection contains only the elements "
-                "common to A and B."
-            )
+            explanation = "Elements common to both A and B."
+            selected_regions = ["110", "111"]
 
         elif operation == "Intersection (A ∩ C)":
-
             result = A & C
-
-            explanation = (
-                "The intersection contains only the elements "
-                "common to A and C."
-            )
+            explanation = "Elements common to both A and C."
+            selected_regions = ["101", "111"]
 
         elif operation == "Intersection (B ∩ C)":
-
             result = B & C
-
-            explanation = (
-                "The intersection contains only the elements "
-                "common to B and C."
-            )
+            explanation = "Elements common to both B and C."
+            selected_regions = ["011", "111"]
 
         elif operation == "Intersection (A ∩ B ∩ C)":
-
             result = A & B & C
-
-            explanation = (
-                "The intersection contains only the elements "
-                "common to all three sets."
-            )
+            explanation = "Elements common to all three sets."
+            selected_regions = ["111"]
 
         elif operation == "Difference (A − B)":
-
             result = A - B
-
-            explanation = (
-                "This contains the elements that belong to A "
-                "but do not belong to B."
-            )
+            explanation = "Elements in A that are not in B."
+            selected_regions = ["100", "101"]
 
         elif operation == "Difference (A − C)":
-
             result = A - C
-
-            explanation = (
-                "This contains the elements that belong to A "
-                "but do not belong to C."
-            )
+            explanation = "Elements in A that are not in C."
+            selected_regions = ["100", "110"]
 
         elif operation == "Difference (B − A)":
-
             result = B - A
-
-            explanation = (
-                "This contains the elements that belong to B "
-                "but do not belong to A."
-            )
+            explanation = "Elements in B that are not in A."
+            selected_regions = ["010", "011"]
 
         elif operation == "Difference (B − C)":
-
             result = B - C
-
-            explanation = (
-                "This contains the elements that belong to B "
-                "but do not belong to C."
-            )
+            explanation = "Elements in B that are not in C."
+            selected_regions = ["010", "110"]
 
         elif operation == "Difference (C − A)":
-
             result = C - A
-
-            explanation = (
-                "This contains the elements that belong to C "
-                "but do not belong to A."
-            )
+            explanation = "Elements in C that are not in A."
+            selected_regions = ["001", "011"]
 
         elif operation == "Difference (C − B)":
-
             result = C - B
-
-            explanation = (
-                "This contains the elements that belong to C "
-                "but do not belong to B."
-            )
+            explanation = "Elements in C that are not in B."
+            selected_regions = ["001", "101"]
 
         elif operation == "Complement (A')":
-
             result = U - A
-
-            explanation = (
-                "The complement of A contains all elements "
-                "of U that are outside A."
-            )
+            explanation = "Elements of U that are outside A."
+            selected_regions = ["010", "001", "011"]
 
         elif operation == "Complement (B')":
-
             result = U - B
-
-            explanation = (
-                "The complement of B contains all elements "
-                "of U that are outside B."
-            )
+            explanation = "Elements of U that are outside B."
+            selected_regions = ["100", "001", "101"]
 
         else:
-
             result = U - C
+            explanation = "Elements of U that are outside C."
+            selected_regions = ["100", "010", "110"]
 
-            explanation = (
-                "The complement of C contains all elements "
-                "of U that are outside C."
-            )
-
-        # =================================================
-        # TWO COLUMNS
-        # =================================================
-
-        left, right = st.columns([1.5, 1])
-
-        # =================================================
-        # LEFT - VENN DIAGRAM
-        # =================================================
+        left, right = st.columns([1.55, 1])
 
         with left:
+            # Region contents: 100=A only, 010=B only, 001=C only,
+            # 110=A∩B only, 101=A∩C only, 011=B∩C only, 111=all three.
+            region_elements = {
+                "100": A - (B | C),
+                "010": B - (A | C),
+                "001": C - (A | B),
+                "110": (A & B) - C,
+                "101": (A & C) - B,
+                "011": (B & C) - A,
+                "111": A & B & C,
+            }
 
-            fig, ax = plt.subplots(figsize=(8, 6))
+            # Use a fixed three-circle geometry so an empty set does not
+            # cause matplotlib_venn to hide or reposition a circle.
+            from matplotlib.patches import Rectangle
 
+            fig, ax = plt.subplots(figsize=(8.2, 7.2))
+            fig.patch.set_facecolor("white")
+            ax.set_facecolor("white")
+
+            is_complement = operation.startswith("Complement")
+            # The rectangle is the universal set. For complements, tint the
+            # whole universe first; circle-region patches are drawn over it.
+            universal_box = Rectangle(
+                (-0.98, -0.78),
+                1.96,
+                1.58,
+                linewidth=2,
+                edgecolor="#222222",
+                facecolor="#e8f2ff" if is_complement else "white",
+                zorder=0
+            )
+            ax.add_patch(universal_box)
+
+            # Artificial equal region sizes are used ONLY to keep the three
+            # circles in a stable layout. The element labels and operation
+            # results below are calculated from the real sets.
             v = venn3(
-                [A, B, C],
+                subsets=(1, 1, 1, 1, 1, 1, 1),
                 set_labels=("Set A", "Set B", "Set C"),
                 ax=ax
             )
 
-            # Make every region faint first
-            regions = [
-                "100",
-                "010",
-                "001",
-                "110",
-                "101",
-                "011",
-                "111"
-            ]
+            # Give every region an opaque neutral base first. This prevents
+            # overlapping translucent circle colors from making unrelated
+            # regions look highlighted.
+            neutral_color = "#e5e7eb"
+            highlight_color = "#16a34a"
 
-            for region in regions:
+            for region_id, elements in region_elements.items():
+                label = v.get_label_by_id(region_id)
+                if label is not None:
+                    label.set_text(
+                        ", ".join(map(str, sorted(elements))) if elements else ""
+                    )
+                    label.set_fontsize(10)
+                    label.set_color("black")
+                    label.set_zorder(20)
 
-                patch = v.get_patch_by_id(region)
-
+                patch = v.get_patch_by_id(region_id)
                 if patch is not None:
-                    patch.set_alpha(0.15)
+                    patch.set_facecolor(neutral_color)
+                    patch.set_edgecolor("white")
+                    patch.set_linewidth(1.0)
+                    patch.set_alpha(1.0)
+                    patch.set_zorder(2)
 
-            # Highlight function
-            def highlight(region_list):
+            # Only regions that belong to the chosen operation are green.
+            # Empty regions are not highlighted because they contain no
+            # elements from the actual sets.
+            if result:
+                for region_id in selected_regions:
+                    patch = v.get_patch_by_id(region_id)
+                    if patch is not None and region_elements[region_id]:
+                        patch.set_facecolor(highlight_color)
+                        patch.set_alpha(1.0)
+                        patch.set_zorder(3)
 
-                for region in region_list:
-
-                    patch = v.get_patch_by_id(region)
-
-                    if patch is not None:
-                        patch.set_alpha(0.90)
-
-            # =================================================
-            # UNION
-            # =================================================
-
-            if operation == "Union (A ∪ B)":
-
-                highlight([
-                    "100",
-                    "010",
-                    "110",
-                    "101",
-                    "011",
-                    "111"
-                ])
-
-            elif operation == "Union (A ∪ C)":
-
-                highlight([
-                    "100",
-                    "001",
-                    "110",
-                    "101",
-                    "011",
-                    "111"
-                ])
-
-            elif operation == "Union (B ∪ C)":
-
-                highlight([
-                    "010",
-                    "001",
-                    "110",
-                    "101",
-                    "011",
-                    "111"
-                ])
-
-            elif operation == "Union (A ∪ B ∪ C)":
-
-                highlight([
-                    "100",
-                    "010",
-                    "001",
-                    "110",
-                    "101",
-                    "011",
-                    "111"
-                ])
-
-            # =================================================
-            # INTERSECTION
-            # =================================================
-
-            elif operation == "Intersection (A ∩ B)":
-
-                highlight([
-                    "110",
-                    "111"
-                ])
-
-            elif operation == "Intersection (A ∩ C)":
-
-                highlight([
-                    "101",
-                    "111"
-                ])
-
-            elif operation == "Intersection (B ∩ C)":
-
-                highlight([
-                    "011",
-                    "111"
-                ])
-
-            elif operation == "Intersection (A ∩ B ∩ C)":
-
-                highlight([
-                    "111"
-                ])
-
-            # =================================================
-            # DIFFERENCE
-            # =================================================
-
-            elif operation == "Difference (A − B)":
-
-                highlight([
-                    "100",
-                    "101"
-                ])
-
-            elif operation == "Difference (A − C)":
-
-                highlight([
-                    "100",
-                    "110"
-                ])
-
-            elif operation == "Difference (B − A)":
-
-                highlight([
-                    "010",
-                    "011"
-                ])
-
-            elif operation == "Difference (B − C)":
-
-                highlight([
-                    "010",
-                    "110"
-                ])
-
-            elif operation == "Difference (C − A)":
-
-                highlight([
-                    "001",
-                    "011"
-                ])
-
-            elif operation == "Difference (C − B)":
-
-                highlight([
-                    "001",
-                    "101"
-                ])
-
-            # =================================================
-            # COMPLEMENT
-            # =================================================
-
-            elif operation == "Complement (A')":
-
-                highlight([
-                    "010",
-                    "001",
-                    "011"
-                ])
-
-            elif operation == "Complement (B')":
-
-                highlight([
-                    "100",
-                    "001",
-                    "101"
-                ])
-
-            elif operation == "Complement (C')":
-
-                highlight([
-                    "100",
-                    "010",
-                    "110"
-                ])
+            # Keep set labels readable and in front of the circles.
+            for label_id in ("A", "B", "C"):
+                label = v.get_label_by_id(label_id)
+                if label is not None:
+                    label.set_color("black")
+                    label.set_fontsize(11)
+                    label.set_zorder(20)
 
             ax.set_title(
                 operation,
-                fontsize=18,
-                fontweight="bold"
+                fontsize=17,
+                fontweight="bold",
+                pad=18,
+                color="black"
             )
 
-            st.pyplot(
-                fig,
-                use_container_width=True
-            )
+            # Give the diagram enough space so circles, labels and rectangle
+            # remain visible instead of being clipped at the bottom.
+            ax.set_xlim(-1.08, 1.08)
+            ax.set_ylim(-0.88, 0.90)
+            ax.set_aspect("equal", adjustable="box")
+            ax.axis("off")
 
+            fig.tight_layout(pad=1.5)
+            st.pyplot(fig, use_container_width=True)
             plt.close(fig)
 
-        # =================================================
-        # RIGHT - EXPLANATION
-        # =================================================
+            st.caption(
+                "Each number shown inside a region is an actual set element, "
+                "not the number of elements in that region."
+            )
 
         with right:
-
             st.subheader("Selected Operation")
-
             st.write(operation)
 
             st.divider()
 
             st.subheader("Result")
-
-            st.success(
-                format_set(result)
-            )
+            st.success(format_set(result))
 
             st.subheader("What does it mean?")
-
-            st.info(
-                explanation
-            )
-
+            st.info(explanation)
 
 # =========================================================
 # LAWS OF SETS
